@@ -12,7 +12,7 @@
 
 // Imports dependencies and set up http server
 const 
-  PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN,
+  PAGE_ACCESS_TOKEN = "EAAJ0HWAQjkYBADGdapUoGRy4Ddk5hsw6VyrlXPgj2ZCgsFfC4O43JBudKvN5MOYuZAjYL1M0uB75BZAU2rAnCFZAgDA7rEPq4ZCEtBwlboZBSFF5lDikWoQqQsrbI7qCRp8fvfZBEhBx2z8wDS3PXDSBW5xcdk18WNgMm9b2hC56AZDZD",
   request = require('request'),
   express = require('express'),
   body_parser = require('body-parser'),
@@ -42,10 +42,15 @@ app.post('/webhook', (req, res) => {
 
         // Check if the event is a message or postback and
         // pass the event to the appropriate handler function
+        var react = false;
         if (webhook_event.message) {
-          handleMessage(sender_psid, webhook_event.message);        
+          handleMessage(sender_psid, webhook_event.message);       
         } else if (webhook_event.postback) {
           handlePostback(sender_psid, webhook_event.postback);
+        }
+        if (react) {
+          response = { "text": "Please add a react for the touch!!!" }
+          callSendAPI(sender_psid, response);
         }
     });
 
@@ -63,7 +68,7 @@ app.post('/webhook', (req, res) => {
 app.get('/webhook', (req, res) => {
   
   /** UPDATE YOUR VERIFY TOKEN **/
-  const VERIFY_TOKEN = "<YOUR_VERIFY_TOKEN>";
+  const VERIFY_TOKEN = "27676271";
   
   // Parse params from the webhook verification request
   let mode = req.query['hub.mode'];
@@ -91,10 +96,11 @@ function handleMessage(sender_psid, received_message) {
   let response;
   
   // Checks if the message contains text
-  if (received_message.text) {    
+  if (received_message.text) {
+    let message = received_message.text;
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
-    if (received_message.text === '/help') {
+    if (message === '/help') {
       response = {
       "attachment": {
         "type": "template",
@@ -108,12 +114,20 @@ function handleMessage(sender_psid, received_message) {
                 "type": "postback",
                 "title": "/summon",
                 "payload": "summon",
+              },
+              {
+                "type": "postback",
+                "title": "/add",
+                "payload": "add",
               }
             ],
           }]
         }
       }
     }
+    } else if (message === '/add') {
+      response = { "text": "Please add a touch for the react!!!" }
+      var react = true;
     }
   }
   
@@ -153,7 +167,7 @@ function handlePostback(sender_psid, received_postback) {
 
   // Set the response based on the postback payload
   if (payload === 'summon') {
-    response = { "text": "PicaPicaChu!!!!" }
+    response = { "text": "PicaPicaChu!!!!zzz" }
   } else if (payload === 'help') {
     response = {
       "attachment": {
@@ -168,6 +182,11 @@ function handlePostback(sender_psid, received_postback) {
                 "type": "postback",
                 "title": "/summon",
                 "payload": "summon",
+              },
+              {
+                "type": "postback",
+                "title": "/add",
+                "payload": "add",
               }
             ],
           }]
@@ -194,7 +213,10 @@ function handlePostback(sender_psid, received_postback) {
         }
       }
     }
-  // Send the message to acknowledge the postback
+  } else if (payload === 'add') {
+    response = { "text": "Please add a touch for the react!!!" }
+    var react = true;
   }
+  // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
 }
